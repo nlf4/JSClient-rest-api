@@ -27,17 +27,16 @@
             </tr>
           </table> 
           <div id="create-form">
-            <form action="POST">
+            <form id="create-task-form" action="#" method="POST">
                 <label for="taa_omschr">Nieuw Taak: </label>
-                <input name="taa_omschr" type="text" id="create-task-desc" placeholder="Omschrijving">
-                <input name="taa_datum" type="date" id="create-task-date">
+                <input name="taa_omschr" type="text" class="form-control" id="create-task-desc" placeholder="Omschrijving" required>
+                <input name="taa_datum" type="date" class="form-control" id="create-task-date" required>
                 <input type="submit" value="Submit">
               </form>
           </div>
           <div id="edit-form">
             <form action="POST">
                 <label for="taa_omschr">Edit Taak: </label>
-                <input name="taa_id" type="text" id="edit-task-id">
                 <input name="taa_omschr" type="text" id="edit-task-desc">
                 <input name="taa_datum" type="date" id="edit-task-date">
                 <input type="submit" value="Submit">
@@ -59,29 +58,49 @@
             loadTasks();
         });
 
+        // convert form values to json format
+        $.fn.serializeObject = function()
+        {
+            var obj = {};
+            var arr = this.serializeArray();
+            $.each(arr, function() {
+                if (obj[this.name] !== undefined) {
+                    if (!obj[this.name].push) {
+                        obj[this.name] = [obj[this.name]];
+                    }
+                    obj[this.name].push(this.value || '');
+                } else {
+                    obj[this.name] = this.value || '';
+                }
+            });
+            return obj;
+        }
+
+        // GET all tasks ----------------------
+        
         function loadTasks() {
-                $.ajax({
-                    type: 'GET',
-                    url: 'http://localhost/RestAPI/api/taken',
-                    success: function(response) {
-                        // if your response is in JSON format, you can access response keys 
-                    // in the following format (both ways give same result) 
-                    let i = 0;
-                    for(i;i<response.length;i++){
-                        const id = response[i]['taa_id']; 
-                        const date = response[i]['taa_datum']; 
-                        const desc = response[i]['taa_omschr'];
-                        
-                        // $('ul.append-to-me').append(id + " " + date + " " + desc + '<br>');
-                        $('table.append-to-me').append(
-                            "<tr><td>"+id+"</td><td>"+date+"</td><td>"+desc+"</td><td><button class='btn btn-info m-r-10px update-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-edit'></span> Edit</button>  <button class='btn btn-danger m-r-10px delete-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-remove'></span> Delete</button></td></tr>"
-                        );
-                    }
-                    },
-                    error: function(error) {
-                        console.log('not implemented');
-                    }
-        });
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost/RestAPI/api/taken',
+                success: function(response) {
+                    // if your response is in JSON format, you can access response keys 
+                // in the following format (both ways give same result) 
+                let i = 0;
+                for(i;i<response.length;i++){
+                    const id = response[i]['taa_id']; 
+                    const date = response[i]['taa_datum']; 
+                    const desc = response[i]['taa_omschr'];
+                    
+                    // $('ul.append-to-me').append(id + " " + date + " " + desc + '<br>');
+                    $('table.append-to-me').append(
+                        "<tr><td>"+id+"</td><td>"+date+"</td><td>"+desc+"</td><td><button class='btn btn-info m-r-10px update-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-edit'></span> Edit</button>  <button class='btn btn-danger m-r-10px delete-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-remove'></span> Delete</button></td></tr>"
+                    );
+                }
+                },
+                error: function(error) {
+                    console.log('not implemented');
+                }
+            });
         }
         
 
@@ -92,48 +111,71 @@
         $('div#create-form').toggle();
     });
 
-    // edit task ---------------------------
-
-    $(document).on('click', '.update-task-button', function(){
-        $('div#edit-form').toggle();
+    // if create task form was submitted
+    $(document).on('submit', '#create-task-form', function(){
+        // get form data
+        var form_data=JSON.stringify($(this).serializeObject());
+        // submit form data to api
+        $.ajax({
+            url: "http://localhost/RestAPI/api/taken",
+            type : "POST",
+            contentType : 'application/json',
+            data : form_data,
+            success : function(result) {
+                alert(result, 'Task created successfully!')
+                loadTasks();
+            },
+            error: function(xhr, resp, text) {
+                // show error to console
+                console.log(xhr, resp, text);
+            }
+        });
+        
+        return false;
     });
 
-    $(document).on('click', '.delete-task-button', function(){
-        // get the id
-        const task_id = $(this).attr('data-id');
-        // // confirmation box
-        //     bootbox.confirm({
+        // edit task ---------------------------
+
+        $(document).on('click', '.update-task-button', function(){
+            $('div#edit-form').toggle();
+        });
+
+        $(document).on('click', '.delete-task-button', function(){
+            // get the id
+            const task_id = $(this).attr('data-id');
+            // // confirmation box
+            //     bootbox.confirm({
+        
+            //         message: "<h4>Are you sure?</h4>",
+            //         buttons: {
+            //             confirm: {
+            //                 label: '<span class="glyphicon glyphicon-ok"></span> Yes',
+            //                 className: 'btn-danger'
+            //             },
+            //             cancel: {
+            //                 label: '<span class="glyphicon glyphicon-remove"></span> No',
+            //                 className: 'btn-primary'
+            //             }
+            //         },
+            //         callback: function (result) {
+            //             // delete request will be here
+            //         }
+            //         });
+            // send delete request to api / remote server
+        $.ajax({
+            url: "http://localhost/RestAPI/api/taak/"+task_id,
+            type : "POST",
+            method : "DELETE",
+            success : function(result) {
     
-        //         message: "<h4>Are you sure?</h4>",
-        //         buttons: {
-        //             confirm: {
-        //                 label: '<span class="glyphicon glyphicon-ok"></span> Yes',
-        //                 className: 'btn-danger'
-        //             },
-        //             cancel: {
-        //                 label: '<span class="glyphicon glyphicon-remove"></span> No',
-        //                 className: 'btn-primary'
-        //             }
-        //         },
-        //         callback: function (result) {
-        //             // delete request will be here
-        //         }
-        //         });
-         // send delete request to api / remote server
-    $.ajax({
-        url: "http://localhost/RestAPI/api/taak/"+task_id,
-        type : "POST",
-        method : "DELETE",
-        success : function(result) {
- 
-            alert(result)
-            loadTasks();
-        },
-        error: function(xhr, resp, text) {
-            console.log(xhr, resp, text);
-        }
-    });
-    });
+                alert(result)
+                loadTasks();
+            },
+            error: function(xhr, resp, text) {
+                console.log(xhr, resp, text);
+            }
+        });
+        });
 
 
 
