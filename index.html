@@ -142,12 +142,15 @@
         success: function (result) {
             // do something with the result
             console.log(result)
+            
         },
         error: function(xhr, resp, text) {
                 // show error to console
                 console.log(xhr, resp, text);
             }
+            
     });
+    // window.location.reload();
 });
         // var form_data=JSON.stringify($(this).serializeObject());
         // console.log(form_data);
@@ -184,27 +187,29 @@
             var datum = data.taa_datum;
             var omschr = data.taa_omschr;
     
-            
-            // load list of categories will be here
             });
-            // store 'update product' html to this variable
+            
         });
 
 
         // if edit task form was submitted
-        $(document).on('submit', '#edit-task-form', function(){
+        $(document).on('submit', '#edit-task-form', function(e){
             // get form data
-            var form_data = JSON.stringify($this);
+            e.preventDefault();
+            const serializedData = $(this).serialize();
+            // const stringifiedData = JSON.stringify(serializedData);
+            const stringifiedData = JSON.stringify($(this).serializeObject());
+            console.log(stringifiedData);
+           
             // submit form data to api
             $.ajax({
                     url: "http://localhost/RestAPI/api/taak/2",
                     type : "PUT",
                     contentType : 'application/json',
                     dataType: 'json',
-                    data : form_data,
+                    data : stringifiedData,
                     success : function(result) {
-                        alert(result, 'Task edited successfully!')
-                        loadTasks();
+                        console.log('update successful');
                     },
                     error: function(xhr, resp, text) {
                         // show error to console
@@ -214,6 +219,8 @@
             
                 // return false;
             });
+
+        // DELETE ---------------------------------
 
         $(document).on('click', '.delete-task-button', function(){
             // get the id
