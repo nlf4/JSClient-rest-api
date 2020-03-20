@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Takenlijst</title>
+    <link rel="stylesheet" href="app/assets/css/style2.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+</head>
+<body>
+    <div class="jumbotron text-center">
+        <h1>Takenlijst</h1>
+    </div>
+    
+    <div class="container">
+        <div id='create-task' class='btn btn-primary float-right m-b-30px create-task-button'>
+            <span class='glyphicon glyphicon-plus'></span> Nieuw Taak
+        </div>
+        <table id="task-table" class="append-to-me">
+            <tr>
+              <th>ID</th>
+              <th>Datum</th>
+              <th>Taak</th>
+              <th>Actie</th>
+            </tr>
+          </table> 
+          <div id="create-form">
+            <form action="POST">
+                <label for="taa_omschr">Nieuw Taak: </label>
+                <input name="taa_omschr" type="text" id="create-task-desc" placeholder="Omschrijving">
+                <input name="taa_datum" type="date" id="create-task-date">
+                <input type="submit" value="Submit">
+              </form>
+          </div>
+          <div id="edit-form">
+            <form action="POST">
+                <label for="taa_omschr">Edit Taak: </label>
+                <input name="taa_id" type="text" id="edit-task-id">
+                <input name="taa_omschr" type="text" id="edit-task-desc">
+                <input name="taa_datum" type="date" id="edit-task-date">
+                <input type="submit" value="Submit">
+              </form>
+          </div>
+          
+          
+    </div>
+    
+    <!-- SCRIPTS -------------------->
+
+    <!-- <script src="app/assets/js/bootbox.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    
+    <script>
+        $(document).ready(function(){
+            loadTasks();
+        });
+
+        function loadTasks() {
+                $.ajax({
+                    type: 'GET',
+                    url: 'http://localhost/RestAPI/api/taken',
+                    success: function(response) {
+                        // if your response is in JSON format, you can access response keys 
+                    // in the following format (both ways give same result) 
+                    let i = 0;
+                    for(i;i<response.length;i++){
+                        const id = response[i]['taa_id']; 
+                        const date = response[i]['taa_datum']; 
+                        const desc = response[i]['taa_omschr'];
+                        
+                        // $('ul.append-to-me').append(id + " " + date + " " + desc + '<br>');
+                        $('table.append-to-me').append(
+                            "<tr><td>"+id+"</td><td>"+date+"</td><td>"+desc+"</td><td><button class='btn btn-info m-r-10px update-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-edit'></span> Edit</button>  <button class='btn btn-danger m-r-10px delete-task-button' data-id='" + id + "'><span class='glyphicon glyphicon-remove'></span> Delete</button></td></tr>"
+                        );
+                    }
+                    },
+                    error: function(error) {
+                        console.log('not implemented');
+                    }
+        });
+        }
+        
+
+
+    // create task -----------------------
+
+    $(document).on('click', '.create-task-button', function(){
+        $('div#create-form').toggle();
+    });
+
+    // edit task ---------------------------
+
+    $(document).on('click', '.update-task-button', function(){
+        $('div#edit-form').toggle();
+    });
+
+    $(document).on('click', '.delete-task-button', function(){
+        // get the id
+        const task_id = $(this).attr('data-id');
+        // // confirmation box
+        //     bootbox.confirm({
+    
+        //         message: "<h4>Are you sure?</h4>",
+        //         buttons: {
+        //             confirm: {
+        //                 label: '<span class="glyphicon glyphicon-ok"></span> Yes',
+        //                 className: 'btn-danger'
+        //             },
+        //             cancel: {
+        //                 label: '<span class="glyphicon glyphicon-remove"></span> No',
+        //                 className: 'btn-primary'
+        //             }
+        //         },
+        //         callback: function (result) {
+        //             // delete request will be here
+        //         }
+        //         });
+         // send delete request to api / remote server
+    $.ajax({
+        url: "http://localhost/RestAPI/api/taak/"+task_id,
+        type : "POST",
+        method : "DELETE",
+        success : function(result) {
+ 
+            alert(result)
+            loadTasks();
+        },
+        error: function(xhr, resp, text) {
+            console.log(xhr, resp, text);
+        }
+    });
+    });
+
+
+
+    </script>
+
+
+
+    
+ 
+    
+</body>
+</html>

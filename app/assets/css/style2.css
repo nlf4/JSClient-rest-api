@@ -1,0 +1,29 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+}
+
+
+table#task-table{
+    width: 100%;
+}
+
+table#task-table, th, td{
+    
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 10px;
+}
+
+div#create-form{
+    display: none;
+    margin-top: 15px;
+}
+div#edit-form{
+    display: none;
+    margin-top: 15px;
+}
