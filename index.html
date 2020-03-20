@@ -35,7 +35,7 @@
               </form>
           </div>
           <div id="edit-form">
-            <form action="POST">
+            <form action="#" method="PUT">
                 <label for="taa_omschr">Edit Taak: </label>
                 <input name="taa_omschr" type="text" id="edit-task-desc">
                 <input name="taa_datum" type="date" id="edit-task-date">
@@ -131,7 +131,7 @@
             }
         });
         
-        return false;
+        // return false;
     });
 
         // edit task ---------------------------
@@ -139,6 +139,30 @@
         $(document).on('click', '.update-task-button', function(){
             $('div#edit-form').toggle();
         });
+
+        // if edit task form was submitted
+        $(document).on('submit', '#edit-task-form', function(){
+            // get form data
+            var form_data = JSON.stringify($this);
+            // submit form data to api
+            $.ajax({
+                    url: "http://localhost/RestAPI/api/taak/2",
+                    type : "PUT",
+                    contentType : 'application/json',
+                    dataType: 'json',
+                    data : form_data,
+                    success : function(result) {
+                        alert(result, 'Task edited successfully!')
+                        loadTasks();
+                    },
+                    error: function(xhr, resp, text) {
+                        // show error to console
+                        console.log(xhr, resp, text);
+                    }
+                });
+            
+                // return false;
+            });
 
         $(document).on('click', '.delete-task-button', function(){
             // get the id
