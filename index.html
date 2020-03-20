@@ -27,21 +27,23 @@
             </tr>
           </table> 
           <div id="create-form">
-            <form id="create-task-form" action="#" method="POST">
+            <form id="create-task-form" action="#" method="POST" enctype="multipart/form-data">
                 <label for="taa_omschr">Nieuw Taak: </label>
-                <input name="taa_omschr" type="text" class="form-control" id="create-task-desc" placeholder="Omschrijving" required>
-                <input name="taa_datum" type="date" class="form-control" id="create-task-date" required>
+                
+                <input name="taa_omschr" type="text" class="form-control" id="taa_omschr" placeholder="Omschrijving" required>
+                <input name="taa_datum" type="date" class="form-control" id="taa_datum" required>
                 <input type="submit" value="Submit">
               </form>
           </div>
           <div id="edit-form">
-            <form action="#" method="PUT">
+            <form id="edit-task-form" action="#" method="PUT" enctype="multipart/form-data">
                 <label for="taa_omschr">Edit Taak: </label>
-                <input name="taa_omschr" type="text" id="edit-task-desc">
-                <input name="taa_datum" type="date" id="edit-task-date">
+                <input name="taa_omschr" type="text" class="form-control" id="taa_omschr" required>
+                <input name="taa_datum" type="date" class="form-control" id="taa_datum" required>
                 <input type="submit" value="Submit">
               </form>
           </div>
+          
           
           
     </div>
@@ -75,6 +77,8 @@
             });
             return obj;
         }
+
+    
 
         // GET all tasks ----------------------
         
@@ -111,34 +115,81 @@
         $('div#create-form').toggle();
     });
 
+    // $( "#create-task-form" ).on( "submit", function( event ) {
+    // event.preventDefault();
+    // console.log( $( this ).serialize() );
+    // });
     // if create task form was submitted
-    $(document).on('submit', '#create-task-form', function(){
+    $(document).on('submit', '#create-task-form', function(e){
+        // get form data        
+        e.preventDefault();
+        const serializedData = $(this).serialize();
+        // const stringifiedData = JSON.stringify(serializedData);
+        const stringifiedData = JSON.stringify($(this).serializeObject());
+        console.log(stringifiedData);
         // get form data
-        var form_data=JSON.stringify($(this).serializeObject());
-        // submit form data to api
-        $.ajax({
-            url: "http://localhost/RestAPI/api/taken",
-            type : "POST",
-            contentType : 'application/json',
-            data : form_data,
-            success : function(result) {
-                alert(result, 'Task created successfully!')
-                loadTasks();
-            },
-            error: function(xhr, resp, text) {
+        // var form_data=JSON.stringify($(this).serializeObject());
+    $.ajax({
+        url: "http://localhost/RestAPI/api/taken",
+        data: stringifiedData,
+        cache: false,
+        dataType: 'json',
+        processData: false,
+        timeout: 0,
+        contentType: false,
+        mimeType: "multipart/form-data",
+        method: 'POST',
+        success: function (result) {
+            // do something with the result
+            console.log(result)
+        },
+        error: function(xhr, resp, text) {
                 // show error to console
                 console.log(xhr, resp, text);
             }
-        });
+    });
+});
+        // var form_data=JSON.stringify($(this).serializeObject());
+        // console.log(form_data);
+        // // submit form data to api
+        // $.ajax({
+        //     url: "http://localhost/RestAPI/api/taken",
+        //     type : "POST",
+        //     contentType : 'application/json',
+        //     data : form_data,
+        //     success : function(result) {
+        //         alert(result, 'Task created successfully!')
+        //         loadTasks();
+        //     },
+        //     error: function(xhr, resp, text) {
+        //         // show error to console
+        //         console.log(xhr, resp, text);
+        //     }
+        // });
         
         // return false;
-    });
+    // });
 
         // edit task ---------------------------
 
         $(document).on('click', '.update-task-button', function(){
             $('div#edit-form').toggle();
+            // get product id
+            var id = $(this).attr('data-id');
+            // read one record based on given product id
+            $.getJSON("http://localhost/RestAPI/api/taak/" + id, function(data){
+            
+            // values will be used to fill out our form
+            var id = data.taa_id;
+            var datum = data.taa_datum;
+            var omschr = data.taa_omschr;
+    
+            
+            // load list of categories will be here
+            });
+            // store 'update product' html to this variable
         });
+
 
         // if edit task form was submitted
         $(document).on('submit', '#edit-task-form', function(){
@@ -167,24 +218,6 @@
         $(document).on('click', '.delete-task-button', function(){
             // get the id
             const task_id = $(this).attr('data-id');
-            // // confirmation box
-            //     bootbox.confirm({
-        
-            //         message: "<h4>Are you sure?</h4>",
-            //         buttons: {
-            //             confirm: {
-            //                 label: '<span class="glyphicon glyphicon-ok"></span> Yes',
-            //                 className: 'btn-danger'
-            //             },
-            //             cancel: {
-            //                 label: '<span class="glyphicon glyphicon-remove"></span> No',
-            //                 className: 'btn-primary'
-            //             }
-            //         },
-            //         callback: function (result) {
-            //             // delete request will be here
-            //         }
-            //         });
             // send delete request to api / remote server
         $.ajax({
             url: "http://localhost/RestAPI/api/taak/"+task_id,
